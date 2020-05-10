@@ -86,18 +86,36 @@ def class4():
 
 @app.route("/api/v1.0/<start>")
 def class5(start):
-    # start = input(dt.date())
     date_format = '%Y-%m-%d'
-    datetime.strptime(str(start), date_format)
+    try:
+        datetime.strptime(str(start), date_format)
+    except ValueError:
+        return 'Incorrect date format, should be YYYY-MM-DD'
     session = Session(engine)
     input_date = session.query(func.min(Measurement.tobs).label("Minimum_Tempreature"),
                 func.avg(Measurement.tobs).label("Average_Tempreature"),
                 func.max(Measurement.tobs).label("Maximum_Tempreature")).\
         filter(Measurement.date >= start).all()
-        # filter(Measurement.station == 'USC00519281').\
     session.close()
 
     return jsonify(input_date)
+
+@app.route("/api/v1.0/<start>/<end>")
+def class6(start, end):
+    date_format = '%Y-%m-%d'
+    try:
+        datetime.strptime(str(start), date_format)
+        datetime.strptime(str(end), date_format)
+    except ValueError:
+        return 'Incorrect date format, should be YYYY-MM-DD'
+    session = Session(engine)
+    input_dates = session.query(func.min(Measurement.tobs).label("Minimum_Tempreature"),
+                func.avg(Measurement.tobs).label("Average_Tempreature"),
+                func.max(Measurement.tobs).label("Maximum_Tempreature")).\
+        filter(Measurement.date >= start, Measurement.date < end).all()
+    session.close()
+
+    return jsonify(input_dates)
 # Start & End date query
 # Should probably have a variable that will read the input and convert it into a date. Same for End Date query
 # Must create a function to take the date interval and scan for highest temp and lowest temp within that range (func.max(Measurement.tobs))
